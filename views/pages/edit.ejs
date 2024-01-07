@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit new Page</title>
+</head>
+<body>
+  <h4><%=course.CourseName%></h4>
+  <br>
+  <h5><%=chapter.ChapterName%></h5>
+  <hr>
+    <div>
+        <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>/Pages/<%=page.id%>?_method=PUT" method="post">
+            <div>
+                <label for="PageName">Edit Title to Page</label>
+                <input type="text" name="PageName" value="<%=page.PageName%>">
+            </div>
+            <div>
+                <label for="Content">Content</label>
+                <br>
+                <textArea rows="30" cols="150" name="Content"><%=page.Content%></textArea>
+            </div>
+            <button>Edit</button>
+        </form>
+    </div>
+</body>
+</html>

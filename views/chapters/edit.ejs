@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h4><%=course.CourseName%></h4>
+    <hr>
+    <h6>Edit chapter Details</h6>
+<br>
+    <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>?_method=PUT" method="post">
+            <div>
+                <label for="ChapterName">ChapterName</label>
+                <input id="ChapterName" type="text" name="ChapterName" value="<%=chapter.ChapterName%>">
+            </div>
+            <div>
+                <label for="Description">Description</label>
+                <Textarea id="Description" name="Description"><%=chapter.Description%></Textarea>
+            </div>
+            <button>Edit</button>
+        </form>
+</body>
+</html>

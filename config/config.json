@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "sindhu2004",
+    "database": "lms_dev",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "sindhu2004",
+    "database": "lms_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "sindhu2004",
+    "database": "lms_prod",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}

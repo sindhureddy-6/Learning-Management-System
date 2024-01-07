@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapters</title>
+</head>
+<body>
+    <h3><%=course.CourseName%></h3>
+    <br>
+    <h5>Chapters</h5>
+    <br><hr>
+    <ul>
+       <% for(chapter of chapters){%>
+        <div>
+            <li>
+                <label>Chapter Name</label>
+                <p><%=chapter.ChapterName%></p>
+            </li>
+            <li>
+                <label>Description</label>
+                <p><%=chapter.Description%></p>
+            </li>
+        </div>
+        <div>
+           <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>/edit" method="get">
+                <button>Edit</button>
+            </form>
+            </div>
+            <div>
+            <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>?_method=DELETE" method="post">
+                <button>Delete</button>
+            </form>
+            </div>
+        </div>
+        <hr>
+       <% } %>
+    </ul>
+    <form action="/courses/<%=course.id%>/chapters/new" method="get">
+        <button>Add Chapter</button>
+    </form>
+
+</body>
+</html>

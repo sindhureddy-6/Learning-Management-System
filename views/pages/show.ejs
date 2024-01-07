@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>show page</title>
+</head>
+<body>
+    <%for(page of formattedPages){%>
+    <h4><%=page.PageName%></h4>
+    <div>
+        <%-page.Content%>
+    </div>
+     <div>
+        <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>/Pages/<%=page.id%>/edit" method="get">
+                <button>Edit</button>
+        </form>
+    </div>
+    <div>
+        <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>/Pages/<%=page.id%>?_method=DELETE" method="post">
+                <button>Delete</button>
+        </form>
+    </div>
+    <hr>
+    <hr>
+    <%}%>
+    
+    
+</body>
+</html>
