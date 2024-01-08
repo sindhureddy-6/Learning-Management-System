@@ -1,17 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add new Course</title>
-</head>
-<body>
-    <div>
-    <form action="/courses" method="post">
-        <label for="CourseName">CourseName</label>
-        <input id="CourseName" type="text" name="CourseName" placeholder="Add CourseName here">
-        <button>Add</button>
-    </form>
+<%layout("./layouts/boilerplate.ejs")-%>
+<div class="row cols-8 offset-2 mt-3">
+  <h2 class="mb-2">Create New Course</h2>
+  <form action="/courses" method="post">
+    <div class="cols-8 mb-2 mt-4">
+      <label for="CourseName" class="form-label fs-5 fw-medium">
+        What is the Name of this Course?</label
+      >
     </div>
-</body>
-</html>
+    <div class="col-8 mb-3">
+      <input
+        id="CourseName"
+        type="text"
+        name="CourseName"
+        placeholder="ex.Web Development"
+        class="form-contol w-100"
+      />
+    </div>
+    <div class="cols-8 mb-3">
+      <button class="btn btn-primary">Add</button>
+    </div>
+  </form>
+</div>

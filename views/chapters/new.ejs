@@ -1,23 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add new Chapter</title>
-</head>
-<body>
+<%layout("./layouts/boilerplate.ejs")-%>
+<div>
+  <form action="/courses/<%=CourseId%>/chapters" method="post">
     <div>
-        <form action="/courses/<%=CourseId%>/chapters" method="post">
-            <div>
-                <label for="ChapterName">ChapterName</label>
-                <input id="ChapterName" type="text" name="ChapterName">
-            </div>
-            <div>
-                <label for="Description">Description</label>
-                <Textarea id="Description" name="Description"></Textarea>
-            </div>
-            <button>Add chapter</button>
-        </form>
+      <label for="ChapterName">ChapterName</label>
+      <input id="ChapterName" type="text" name="ChapterName" />
     </div>
-</body>
-</html>
+    <div>
+      <label for="Description">Description</label>
+      <Textarea id="Description" name="Description"></Textarea>
+    </div>
+    <button>Add chapter</button>
+  </form>
+</div>

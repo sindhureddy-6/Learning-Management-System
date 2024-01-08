@@ -4,8 +4,9 @@ const ejsMate = require("ejs-mate");
 const path = require("path");
 const markdownIt = require('markdown-it')();
 var methodOverride = require('method-override')
-const { Course,Chapter,Page} = require("./models");
+const { Course, Chapter, Page } = require("./models");
 
+app.engine('ejs',ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(methodOverride('_method'));
@@ -18,7 +19,6 @@ app.get("/", (req, res) => {
 //all courses
 app.get("/courses", async (req, res) => {
     let courses = await Course.findAll();
-    console.log(courses);
     res.render("courses/home.ejs", { courses });
 });
 //create course
@@ -36,7 +36,6 @@ app.get("/courses/new", async (req, res) => {
 });
 //show Chapters
 app.get("/courses/:CourseId/chapters", async (req, res) => {
-    //show chapters
     try {
         let CourseId = req.params.CourseId;
         let course = await Course.findByPk(CourseId);

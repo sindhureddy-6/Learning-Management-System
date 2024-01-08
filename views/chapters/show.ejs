@@ -1,28 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chapters</title>
-</head>
-<body>
-    <h3><%=course.CourseName%></h3>
-    <br>
-    <h5>Chapters</h5>
-    <br><hr>
-    <ul>
-       <% for(chapter of chapters){%>
-        <div>
-            <li>
-                <label>Chapter Name</label>
-                <p><%=chapter.ChapterName%></p>
-            </li>
-            <li>
-                <label>Description</label>
-                <p><%=chapter.Description%></p>
-            </li>
-        </div>
-        <div>
+<%layout("./layouts/boilerplate.ejs")-%>
+<h3 class="mt-3 mb-2"><%=course.CourseName%></h3>
+<hr />
+<div class="row">
+  <div class="col-6 mt-4 ml-4">
+    <h4>Chapters</h4>
+    <form action="/courses/<%=course.id%>/chapters/new" method="get">
+      <button class="btn btn-warning mt-2">Add Chapter</button>
+    </form>
+  </div>
+  <div class="col-6 offset-3 card ml-3" style="width: 16rem">
+    <div class="card-body">
+      <h5 class="card-title"><%=course.CourseName%></h5>
+      <!-- <p class="card-text">
+        With supporting text below as a natural lead-in to additional content.
+      </p> -->
+      <div>
+        <p>Educator Name</p>
+        <p>no.of Enrollements</p>
+      </div>
+      <div>
+        <a href="#" class="btn btn-primary">Enroll</a>
+      </div>
+    </div>
+  </div>
+</div>
+<hr />
+
+<div class="row">
+  <% for(chapter of chapters) { %>
+  <div class="row cols-5 offset-2 w-50 h-80">
+    <a
+      href="/courses/<%=course.id%>/chapters/<%=chapter.id%>/pages"
+      class="text-decoration-none text-black"
+      ><div class="border border-1 border-black mb-3 fs-5 fw-medium p-1">
+        <%= chapter.ChapterName %>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-1"><i class="fa-solid fa-lock ml-3 ml-3"></i></div>
+
+  <% } %>
+</div>
+
+<!-- <div>
            <form action="/courses/<%=course.id%>/chapters/<%=chapter.id%>/edit" method="get">
                 <button>Edit</button>
             </form>
@@ -32,13 +53,4 @@
                 <button>Delete</button>
             </form>
             </div>
-        </div>
-        <hr>
-       <% } %>
-    </ul>
-    <form action="/courses/<%=course.id%>/chapters/new" method="get">
-        <button>Add Chapter</button>
-    </form>
-
-</body>
-</html>
+        </div> -->
