@@ -1,14 +1,33 @@
 <%layout("./layouts/boilerplate.ejs")-%>
-<div>
-  <form action="/courses/<%=CourseId%>/chapters" method="post">
-    <div>
-      <label for="ChapterName">ChapterName</label>
-      <input id="ChapterName" type="text" name="ChapterName" />
-    </div>
-    <div>
-      <label for="Description">Description</label>
-      <Textarea id="Description" name="Description"></Textarea>
-    </div>
-    <button>Add chapter</button>
-  </form>
+<div class="row cols-3 offset-2 mt-4">
+  <div class="col-8 w-60">
+    <h3><%=course.CourseName%> &gt; Create a New Chapter</h3>
+    <hr />
+    <form action="/courses/<%=course.id%>/chapters" method="post">
+      <div class="mt-4">
+        <label for="ChapterName" class="form-label fs-5 fw-medium"
+          >Give the Title to the Chapter</label
+        >
+        <input
+          id="ChapterName"
+          type="text"
+          name="ChapterName"
+          class="form-control"
+          placeholder="Chapter Name here!"
+        />
+      </div>
+      <div class="mt-2">
+        <label for="Description" class="form-label fs-5 fw-medium"
+          >Description</label
+        >
+        <Textarea
+          id="Description"
+          name="Description"
+          class="form-control"
+          rows="4"
+        ></Textarea>
+      </div>
+      <button class="btn btn-primary mt-3">Add chapter</button>
+    </form>
+  </div>
 </div>

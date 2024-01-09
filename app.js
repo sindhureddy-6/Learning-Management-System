@@ -48,15 +48,15 @@ app.get("/courses/:CourseId/chapters", async (req, res) => {
 })
 app.get("/courses/:CourseId/chapters/new", async (req, res) => {
     let CourseId = req.params.CourseId;
-    console.log(CourseId);
-    res.render("chapters/new.ejs", { CourseId });
+   let course = await Course.findByPk(CourseId);
+    res.render("chapters/new.ejs", { course });
 })
 app.post("/courses/:CourseId/chapters", async (req, res) => {
     try {
         let c_id = req.params.CourseId;
         let chapter = await Chapter.create({ ...req.body, CourseId: c_id });
         // console.log(chapter);
-        res.redirect(`/courses/${c_id}/chapters`)
+        res.redirect(`/courses/${c_id}/chapters/${chapter.id}/pages/new`)
     } catch (error) {
         console.error("Error creating chapter:", error);
         res.status(500).send("Internal Server Error");
