@@ -111,21 +111,21 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
         let courseId = req.params.CourseId;
         let chapterId = req.params.ChapterId;
         let course = await Course.findByPk(courseId);
-        let chapter = await Chapter.findByPk(chapterId);  
+        let chapter = await Chapter.findByPk(chapterId); 
+        let page = await Page.findOne({ limit: 1,
+            order: [['id', 'ASC']]
+        });
         let Pages = await Page.findAll({
             where: {
                 ChapterID: chapterId,
             },
-            order:[['id']]
-        })
-        const formattedPages = Pages.map((page) => {
-            return {
-                ...page.toJSON(), 
-                Content: markdownIt.render(page.Content),
-            };
+            order: [['id']]
         });
-        // console.log(formattedPages[0]);
-        res.render("pages/show.ejs", { formattedPages,course,chapter}); 
+        let nextIndex = (Pages.findIndex((p) => p.id === page.id)) + 1;
+        if (nextIndex == Pages.length) {
+            nextIndex = 0;
+        }
+        res.render("pages/show.ejs", {Pages,course,chapter,page,nextIndex}); 
     }
     catch (err) {
         console.log(err);
@@ -137,14 +137,40 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/new", async (req, res) => 
     let chapterId = req.params.ChapterId;
     let course = await Course.findByPk(courseId);
     let chapter = await Chapter.findByPk(chapterId);
-    res.render("pages/new.ejs", { course, chapter });
+    let chapters = await Chapter.findAll({ order: [['id']] });
+    res.render("pages/new.ejs", { course, chapter,chapters });
+});
+//get particular page
+app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res) => {
+    try {
+        let courseId = req.params.CourseId;
+        let chapterId = req.params.ChapterId;
+        let PageId = req.params.PageId;
+        let course = await Course.findByPk(courseId);
+        let chapter = await Chapter.findByPk(chapterId);
+        let page = await Page.findOne({ where: { id: PageId } });
+        let Pages = await Page.findAll({
+            where: {
+                ChapterID: chapterId,
+            },
+            order: [['id']]
+        });
+        let nextIndex = (Pages.findIndex((p) => p.id === page.id)) + 1;
+        if (nextIndex == Pages.length) {
+            nextIndex = 0;
+        }
+        res.render("pages/show.ejs", { Pages, course, chapter, page,nextIndex});
+    }
+    catch (err) {
+        console.log(err);
+    }
 });
 app.post("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
     try {
         let courseId = req.params.CourseId;
-        let ch_id = req.params.ChapterId;
-        let page = await Page.create({ ...req.body, ChapterID: ch_id });
-        res.redirect(`/courses/${courseId}/chapters/${ch_id}/Pages`)
+        // let ch_id = req.params.ChapterId;
+        let page = await Page.create({ ...req.body});
+        res.redirect(`/courses/${courseId}/chapters`)
     }
     catch (err) {
         console.log(err);
