@@ -2,9 +2,8 @@ const express = require("express");
 const app = express();
 const ejsMate = require("ejs-mate");
 const path = require("path");
-const markdownIt = require('markdown-it')();
 var methodOverride = require('method-override')
-const { Course, Chapter, Page } = require("./models");
+const { Course, Chapter, Page,User } = require("./models");
 
 app.engine('ejs',ejsMate);
 app.set("view engine", "ejs");
@@ -112,8 +111,11 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
         let chapterId = req.params.ChapterId;
         let course = await Course.findByPk(courseId);
         let chapter = await Chapter.findByPk(chapterId); 
-        let page = await Page.findOne({ limit: 1,
-            order: [['id', 'ASC']]
+        let page = await Page.findOne({
+            where: {
+            ChapterID: chapterId,
+        }, limit: 1,
+            order: [['id', 'ASC']],
         });
         let Pages = await Page.findAll({
             where: {
@@ -125,6 +127,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
         if (nextIndex == Pages.length) {
             nextIndex = 0;
         }
+        console.log("nextPage", nextIndex);
         res.render("pages/show.ejs", {Pages,course,chapter,page,nextIndex}); 
     }
     catch (err) {
@@ -159,6 +162,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res)
         if (nextIndex == Pages.length) {
             nextIndex = 0;
         }
+        console.log("nextPage", nextIndex);
         res.render("pages/show.ejs", { Pages, course, chapter, page,nextIndex});
     }
     catch (err) {
@@ -168,9 +172,9 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res)
 app.post("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
     try {
         let courseId = req.params.CourseId;
-        // let ch_id = req.params.ChapterId;
+         let ch_id = req.params.ChapterId;
         let page = await Page.create({ ...req.body});
-        res.redirect(`/courses/${courseId}/chapters`)
+        res.redirect(`/courses/${courseId}/chapters`);
     }
     catch (err) {
         console.log(err);
@@ -221,6 +225,26 @@ app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, r
     catch (err) {
         console.log(err);
     }
+});
+// Users
+//signup get
+app.get("/signup", (req, res) => {
+    res.render("users/signup.ejs");
+});
+app.post("/signup", async(req, res) => {
+    let user = await User.create({ ...req.body });
+    res.redirect("/login");
+});
+
+app.get("/login", (req, res) => {
+    res.render("users/login.ejs");
+});
+app.post("/login", (req, res) => {
+    res.redirect("/courses");
+});
+app.get("/sigout", (req, res) => {
+    console.log("signuout");
+    res.redirect("/login");
 })
 
 app.listen(4000, () => {
