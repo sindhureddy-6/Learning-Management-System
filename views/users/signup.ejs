@@ -3,11 +3,8 @@
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
-        <form
-          class="bg-white p-4 rounded shadow"
-          action="/signup"
-          method="post"
-        >
+        <form class="bg-white p-4 rounded shadow" action="/users" method="post">
+          <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
           <h2 class="text-center mb-4">Let's get Started!</h2>
 
           <div class="form-group mb-2">
@@ -56,7 +53,7 @@
           <div class="mt-2 pl-2">
             <h6 class="pl-2">
               Already have an Account?
-              <a href="" class="text-decoration-none">login</a>
+              <a href="/login" class="text-decoration-none">login</a>
             </h6>
           </div>
         </form>

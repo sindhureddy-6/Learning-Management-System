@@ -5,9 +5,10 @@
       <div class="col-md-6">
         <form
           class="bg-white p-4 rounded shadow"
-          action="/signup"
+          action="/session"
           method="post"
         >
+          <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
           <h2 class="text-center mb-4">Login</h2>
 
           <div class="form-group mb-2">
@@ -32,6 +33,12 @@
           </div>
           <div class="mb-2 justify-content-center text-center">
             <button class="btn btn-primary btn-block">Login</button>
+          </div>
+          <div class="mt-2 pl-2">
+            <h6 class="pl-2">
+              Don't have an Account ?
+              <a href="/signup" class="text-decoration-none">Signup</a>
+            </h6>
           </div>
         </form>
       </div>

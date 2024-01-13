@@ -1,24 +1,97 @@
+const csurf = require("tiny-csrf");
 const express = require("express");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const app = express();
 const ejsMate = require("ejs-mate");
 const path = require("path");
-var methodOverride = require('method-override')
-const { Course, Chapter, Page,User } = require("./models");
+var methodOverride = require('method-override');
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const bcrypt = require("bcrypt");
+const { Course, Chapter, Page,User ,Enrollment} = require("./models");
 
 app.engine('ejs',ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "/public")));
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "/public")));
+app.use(cookieParser("cookie-parser-secret"));
+app.use(session({
+    secret: "my-super-secret-key-156655548662145",
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+    }
+  }));
+app.use(
+  csurf(
+    "123456789iamasecret987654321look"
+  )
+);
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "userName",
+      passwordField: "Password",
+    },
+    async (username, password, done) => {
+      console.log("In authentication", username, password);
+      try {
+        const user = await User.findOne({
+          where: {
+            "userName": username,
+          },
+        });
 
-app.get("/", (req, res) => {
-    res.render("layouts/boilerplate.ejs");
-})
+        if (!user) {
+          console.log("User not found");
+          return done(null, false, { message: "User not found" });
+        }
+
+        console.log("Comparing passwords", user);
+        const result = await bcrypt.compare(password, user.Password);
+
+        console.log("Result", result);
+
+        if (result) {
+          return done(null, user);
+        } else {
+          return done(null, false, { message: "Invalid password" });
+        }
+      } catch (err) {
+        console.error("Error during authentication:", err);
+        return done(err);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  console.log("serializing user in session ", user.id);
+  done(null, user.id);
+});
+passport.deserializeUser((id, done) => {
+  User.findByPk(id)
+    .then((user) => {
+      console.log("deserializing user from session ", user.id);
+      done(null, user);
+    })
+    .catch((err) => {
+      done(err, null);
+    });
+});
+const saltRounds = 10;
+
+
 //all courses
 app.get("/courses", async (req, res) => {
     let courses = await Course.findAll();
-    res.render("courses/home.ejs", { courses });
+    res.render("courses/home.ejs", { courses,csrfToken:req.csrfToken() });
 });
 //create course
 app.post("/courses", async (req, res) => {
@@ -226,27 +299,78 @@ app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, r
         console.log(err);
     }
 });
+//enroll
+app.post("/courses/:courseId/enroll", async(req, res) => {
+    const userId = req.user.id;
+    console.log("userid", userId);
+    const { courseId } = req.params;
+    console.log("courseid", courseId);
+
+    try {
+        // Check if the course exists
+        const course = await Course.findByPk(courseId);
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        // Check if the user is already enrolled in the course
+        const existingEnrollment = await Enrollment.findOne({
+            where: {
+                userId,
+                courseId,
+            },
+        });
+
+        if (existingEnrollment) {
+            return res.status(400).json({ error: 'User is already enrolled in this course' });
+        }
+
+        // Enroll the user in the course
+        await Enrollment.create({
+            userId,
+            courseId,
+        });
+
+        return res.redirect(`/courses/${courseId}/chapters`);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+)
 // Users
 //signup get
 app.get("/signup", (req, res) => {
-    res.render("users/signup.ejs");
+    res.render("users/signup.ejs", { csrfToken: req.csrfToken() });
 });
-app.post("/signup", async(req, res) => {
-    let user = await User.create({ ...req.body });
+app.post("/users", async (req, res) => {
+    console.log("reqBODy,", req.body);
+    const hashedPwd = await bcrypt.hash(req.body.Password, saltRounds);
+     await User.create({ ...req.body, Password: hashedPwd });
     res.redirect("/login");
 });
 
 app.get("/login", (req, res) => {
-    res.render("users/login.ejs");
+    res.render("users/login.ejs",{ csrfToken: req.csrfToken() });
 });
-app.post("/login", (req, res) => {
-    res.redirect("/courses");
-});
-app.get("/sigout", (req, res) => {
-    console.log("signuout");
-    res.redirect("/login");
+app.post(
+  "/session",
+  passport.authenticate("local", {
+    failureRedirect: "/login"
+  }),
+  (req, res) => {
+     res.redirect("/courses");
+  },
+);
+app.get("/signout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.redirect("/login");
+    });
 })
 
 app.listen(4000, () => {
     console.log("app is listening at port 4000");
-})
+});
