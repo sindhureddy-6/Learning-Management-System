@@ -6,9 +6,11 @@
     >
     <div class="d-flex flex-row navbar-nav ms-auto">
       <li class="nav-item">
+        <%if(currUser){%>
         <a class="text-decoration-none btn btn-danger rounded" href="/signout"
           >Signout</a
         >
+        <% }%>
       </li>
     </div>
   </div>

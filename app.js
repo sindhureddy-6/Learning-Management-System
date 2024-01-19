@@ -92,7 +92,7 @@ app.use((req, res, next) => {
     if (req.user && req.user.dataValues) {
         res.locals.currUser = req.user.dataValues;
     } else {
-        console.log("User or user role not found.");
+        res.locals.currUser = null;
     }
     next();
 });
@@ -153,17 +153,45 @@ app.get("/courses/new",connectEnsureLogin.ensureLoggedIn(), async (req, res) => 
     res.render("courses/new.ejs",{csrfToken:req.csrfToken()});
 });
 //show Chapters
-app.get("/courses/:CourseId/chapters",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+app.get("/courses/:CourseId/chapters", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
-        let CourseId = req.params.CourseId;
-        let course = await Course.findByPk(CourseId);
-        let chapters = await Chapter.findAll({ where: { CourseId: CourseId }, order: [['id']] });
-        res.render("chapters/show.ejs", { course, chapters });
+        let userId = req.user.id;
+        let courseId = req.params.CourseId;
+        let course = await Course.findOne({
+            where:{id:courseId},
+        attributes: [
+            'id',
+            'CourseName',
+            'EducatorId',
+            [Sequelize.fn('COUNT', Sequelize.literal('"Enrollments"."id"')), 'enrollmentCount']
+        ],
+        include: [
+            {
+                model: User,
+                as: 'User',
+                attributes: ['userName'],
+                on: {
+                    'EducatorId': Sequelize.literal('"User"."id" = "Course"."EducatorId"')
+                },
+            },
+            {
+                model: Enrollment,
+                as: 'Enrollments',
+                attributes:[],
+            },
+        ],
+        group: ['Course.id', 'User.id']
+        });
+        console.log(course.CourseName);
+        res.locals.enrolled = await Enrollment.findAll({ where: { userId, courseId } });
+        
+        let chapters = await Chapter.findAll({ where: { CourseId: courseId }, order: [['id']] });
+        res.render("chapters/show.ejs", { course, chapters,csrfToken:req.csrfToken() });
     }
     catch (err) {
         console.log(err);
     }
-})
+});
 app.get("/courses/:CourseId/chapters/new",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let CourseId = req.params.CourseId;
    let course = await Course.findByPk(CourseId);
@@ -259,7 +287,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/new",connectEnsureLogin.en
     let chapterId = req.params.ChapterId;
     let course = await Course.findByPk(courseId);
     let chapter = await Chapter.findByPk(chapterId);
-    let chapters = await Chapter.findAll({ order: [['id']] });
+    let chapters = await Chapter.findAll({ where:{ CourseId: courseId },order: [['id']] });
     res.render("pages/new.ejs", { course, chapter,chapters,csrfToken:req.csrfToken() });
 });
 //get particular page
