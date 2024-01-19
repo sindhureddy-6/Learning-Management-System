@@ -7,6 +7,7 @@
       action="/courses/<%=course.id%>/chapters/<%=chapter.id%>?_method=PUT"
       method="post"
     >
+      <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
       <div>
         <label for="ChapterName" class="form-label fs-5 fw-medium"
           >Give the Chapter Name you want to Update</label

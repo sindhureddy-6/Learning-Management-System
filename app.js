@@ -3,11 +3,13 @@ const express = require("express");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const app = express();
+const Sequelize = require("sequelize");
 const ejsMate = require("ejs-mate");
 const path = require("path");
 var methodOverride = require('method-override');
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+const connectEnsureLogin = require("connect-ensure-login");
 const bcrypt = require("bcrypt");
 const { Course, Chapter, Page,User ,Enrollment} = require("./models");
 
@@ -40,7 +42,7 @@ passport.use(
       passwordField: "Password",
     },
     async (username, password, done) => {
-      console.log("In authentication", username, password);
+    //   console.log("In authentication", username, password);
       try {
         const user = await User.findOne({
           where: {
@@ -53,10 +55,10 @@ passport.use(
           return done(null, false, { message: "User not found" });
         }
 
-        console.log("Comparing passwords", user);
+        // console.log("Comparing passwords", user);
         const result = await bcrypt.compare(password, user.Password);
 
-        console.log("Result", result);
+        // console.log("Result", result);
 
         if (result) {
           return done(null, user);
@@ -86,28 +88,72 @@ passport.deserializeUser((id, done) => {
     });
 });
 const saltRounds = 10;
-
-
-//all courses
-app.get("/courses", async (req, res) => {
-    let courses = await Course.findAll();
-    res.render("courses/home.ejs", { courses,csrfToken:req.csrfToken() });
+app.use((req, res, next) => {
+    if (req.user && req.user.dataValues) {
+        res.locals.currUser = req.user.dataValues;
+    } else {
+        console.log("User or user role not found.");
+    }
+    next();
 });
+//all courses
+app.get("/courses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+    let userId = req.user.dataValues.id;
+    let courses = await Course.findAll({
+        attributes: [
+            'id',
+            'CourseName',
+            'EducatorId',
+            [Sequelize.fn('COUNT', Sequelize.literal('"Enrollments"."id"')), 'enrollmentCount']
+        ],
+        include: [
+            {
+                model: User,
+                as: 'User',
+                attributes: ['userName'],
+                on: {
+                    'EducatorId': Sequelize.literal('"User"."id" = "Course"."EducatorId"')
+                },
+            },
+            {
+                model: Enrollment,
+                as: 'Enrollments',
+                attributes:[],
+            },
+        ],
+        group: ['Course.id', 'User.id'],
+        subQuery: false,
+    });
+    let enrolledCourses =await Enrollment.findAll({
+        where: {
+            userId,
+        }
+    });
+    const courseIds = enrolledCourses.map(enrollment => enrollment.courseId);
+    let userCourses = courses.filter((course) => {
+        return courseIds.includes(course.id)
+    });
+
+    res.render("courses/home.ejs", { courses, userCourses, csrfToken: req.csrfToken() });
+});
+
+
 //create course
-app.post("/courses", async (req, res) => {
+app.post("/courses",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
-        await Course.create(req.body);
+        console.log("user id", req.user.dataValues.id);
+        await Course.create({ ...req.body, EducatorId: req.user.dataValues.id });
         res.redirect("/courses");
     }
     catch (err) {
         console.log(err);
     }
 })
-app.get("/courses/new", async (req, res) => {
-    res.render("courses/new.ejs");
+app.get("/courses/new",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+    res.render("courses/new.ejs",{csrfToken:req.csrfToken()});
 });
 //show Chapters
-app.get("/courses/:CourseId/chapters", async (req, res) => {
+app.get("/courses/:CourseId/chapters",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let CourseId = req.params.CourseId;
         let course = await Course.findByPk(CourseId);
@@ -118,12 +164,12 @@ app.get("/courses/:CourseId/chapters", async (req, res) => {
         console.log(err);
     }
 })
-app.get("/courses/:CourseId/chapters/new", async (req, res) => {
+app.get("/courses/:CourseId/chapters/new",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let CourseId = req.params.CourseId;
    let course = await Course.findByPk(CourseId);
-    res.render("chapters/new.ejs", { course });
+    res.render("chapters/new.ejs", { course,csrfToken:req.csrfToken() });
 })
-app.post("/courses/:CourseId/chapters", async (req, res) => {
+app.post("/courses/:CourseId/chapters",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let c_id = req.params.CourseId;
         let chapter = await Chapter.create({ ...req.body, CourseId: c_id });
@@ -134,19 +180,19 @@ app.post("/courses/:CourseId/chapters", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-app.get("/courses/:CourseId/chapters/:ChapterId/edit", async (req, res) => {
+app.get("/courses/:CourseId/chapters/:ChapterId/edit",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let courseId = req.params.CourseId;
     let chapterId = req.params.ChapterId;
     try {
         let course = await Course.findByPk(courseId);
         let chapter = await Chapter.findByPk(chapterId);
-        res.render("chapters/edit.ejs", { course, chapter });
+        res.render("chapters/edit.ejs", { course, chapter,csrfToken:req.csrfToken() });
     } catch (err) {
         console.log(err);
     }
 
 });
-app.put("/courses/:CourseId/chapters/:ChapterId", async (req, res) => {
+app.put("/courses/:CourseId/chapters/:ChapterId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let courseId = req.params.CourseId;
     let chapterId = req.params.ChapterId;
     try {
@@ -162,7 +208,7 @@ app.put("/courses/:CourseId/chapters/:ChapterId", async (req, res) => {
     }
 
 });
-app.delete("/courses/:CourseId/chapters/:ChapterId", async (req, res) => {
+app.delete("/courses/:CourseId/chapters/:ChapterId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let courseId = req.params.CourseId;
     let chapterId = req.params.ChapterId;
     try {
@@ -178,7 +224,7 @@ app.delete("/courses/:CourseId/chapters/:ChapterId", async (req, res) => {
     }
 })
 //show pages
-app.get("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
+app.get("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let courseId = req.params.CourseId;
         let chapterId = req.params.ChapterId;
@@ -208,16 +254,16 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
     }   
 });
 //add pages
-app.get("/courses/:CourseId/chapters/:ChapterId/Pages/new", async (req, res) => {
+app.get("/courses/:CourseId/chapters/:ChapterId/Pages/new",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let courseId = req.params.CourseId;
     let chapterId = req.params.ChapterId;
     let course = await Course.findByPk(courseId);
     let chapter = await Chapter.findByPk(chapterId);
     let chapters = await Chapter.findAll({ order: [['id']] });
-    res.render("pages/new.ejs", { course, chapter,chapters });
+    res.render("pages/new.ejs", { course, chapter,chapters,csrfToken:req.csrfToken() });
 });
 //get particular page
-app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res) => {
+app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let courseId = req.params.CourseId;
         let chapterId = req.params.ChapterId;
@@ -242,7 +288,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res)
         console.log(err);
     }
 });
-app.post("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
+app.post("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let courseId = req.params.CourseId;
          let ch_id = req.params.ChapterId;
@@ -253,7 +299,7 @@ app.post("/courses/:CourseId/chapters/:ChapterId/Pages", async (req, res) => {
         console.log(err);
     }
 });
-app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId/edit", async (req, res) => {
+app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId/edit",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let courseId = req.params.CourseId;
         let chapterId = req.params.ChapterId;
@@ -261,13 +307,13 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId/edit", async (req,
         let course = await Course.findByPk(courseId);
         let chapter = await Chapter.findByPk(chapterId);
         let page = await Page.findByPk(pageId);
-        res.render("pages/edit.ejs", { course, chapter,page });
+        res.render("pages/edit.ejs", { course, chapter,page,csrfToken:req.csrfToken() });
     }
     catch (err) {
         console.log(err);
     }
 });
-app.put("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res) => {
+app.put("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let courseId = req.params.CourseId;
     let chapterId = req.params.ChapterId;
     let pageId = req.params.PageId;
@@ -283,7 +329,7 @@ app.put("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res)
         console.log(err);
     }
 });
-app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, res) => {
+app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let courseId = req.params.CourseId;
     let chapterId = req.params.ChapterId;
     let pageId = req.params.PageId;
@@ -300,7 +346,7 @@ app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId", async (req, r
     }
 });
 //enroll
-app.post("/courses/:courseId/enroll", async(req, res) => {
+app.post("/courses/:courseId/enroll",connectEnsureLogin.ensureLoggedIn(), async(req, res) => {
     const userId = req.user.id;
     console.log("userid", userId);
     const { courseId } = req.params;
@@ -331,7 +377,7 @@ app.post("/courses/:courseId/enroll", async(req, res) => {
             courseId,
         });
 
-        return res.redirect(`/courses/${courseId}/chapters`);
+        return res.redirect(`/courses`);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });

@@ -2,6 +2,7 @@
 <div class="row cols-8 offset-2 mt-3">
   <h2 class="mb-2">Create New Course</h2>
   <form action="/courses" method="post">
+    <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
     <div class="cols-8 mb-2 mt-4">
       <label for="CourseName" class="form-label fs-5 fw-medium">
         What is the Name of this Course?</label

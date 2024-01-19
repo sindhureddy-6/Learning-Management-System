@@ -1,5 +1,6 @@
 <%layout("./layouts/boilerplate.ejs")-%>
 <!-- Administrative Actions -->
+<%if (currUser && currUser.role=='Educator'){%>
 <div class="row col-6 mt-3">
   <div>
     <h4>Administrative Actions</h4>
@@ -11,24 +12,80 @@
   </div>
 </div>
 <hr />
-<!-- <form action="/courses/new" method="get">Create Course</form> -->
+<%}%> <%if (currUser && currUser.role=='Student'){%>
 <div class="row cols-8 flex-wrap gap-4 mt-3">
+  <h4 class="text-danger">My courses</h4>
+  <% for(course of userCourses){%>
+  <div class="card ml-3" style="width: 18rem">
+    <div class="card-body">
+      <h5 class="card-title"><%=course.CourseName%></h5>
+      <hr />
+      <div class="row mt-2">
+        <div class="col-6 fs-5 fw-medium">
+          <%if(course.User){%>
+          <p><%=course.User.userName%></p>
+          <%}else{%>
+          <p>John Doe</p>
+          <%}%>
+        </div>
+        <div class="row col-6">
+          <i class="fa-solid fa-users col-4 offset-2 mt-2"></i>
+          <p class="col-6 fs-5 fw-medium">
+            <%= course.getDataValue('enrollmentCount')%>
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <a
+          href="/courses/<%=course.id%>/chapters"
+          class="btn btn-secondary col-6"
+          >Continue <i class="fa-solid fa-play">. .</i>
+        </a>
+
+        <form action="#" class="col-6">
+          <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
+          <button class="btn btn-success">Completed%</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <%}%>
+  <hr />
+</div>
+<%}%>
+<div class="row cols-8 flex-wrap gap-4 mt-3">
+  <h4>Available Courses</h4>
   <% for(course of courses){%>
   <div class="card ml-3" style="width: 16rem">
     <div class="card-body">
       <h5 class="card-title"><%=course.CourseName%></h5>
-      <!-- <p class="card-text">
-        With supporting text below as a natural lead-in to additional content.
-      </p> -->
-      <div>
-        <p>Educator Name</p>
-        <p>no.of Enrollements</p>
+      <hr />
+      <div class="row mt-2">
+        <div class="col-6 fs-5 fw-medium">
+          <%if(course.User){%>
+          <p><%=course.User.userName%></p>
+          <%}else{%>
+          <p>John Doe</p>
+          <%}%>
+        </div>
+        <div class="row col-6">
+          <i class="fa-solid fa-users col-4 offset-2 mt-2"></i>
+          <p class="col-6 fs-5 fw-medium">
+            <%= course.getDataValue('enrollmentCount')%>
+          </p>
+        </div>
       </div>
-      <div>
-        <a href="/courses/<%=course.id%>/chapters" class="btn btn-secondary"
+      <div class="row">
+        <a
+          href="/courses/<%=course.id%>/chapters"
+          class="btn btn-secondary col-6"
           >view Course</a
         >
-        <form action="/courses/<%=course.id%>/enroll" method="post">
+        <form
+          action="/courses/<%=course.id%>/enroll"
+          method="post"
+          class="col-6"
+        >
           <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
           <button class="btn btn-primary">Enroll</button>
         </form>

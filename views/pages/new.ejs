@@ -9,6 +9,7 @@
       method="post"
       class="editor-form"
     >
+      <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
       <div class="col-5">
         <label class="form-label fs-5 fw-medium">Select Chapter</label>
         <select name="ChapterID" class="form-select">

@@ -11,24 +11,34 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+       User.hasMany(models.Course, {
+        foreignKey: "EducatorId",
+       });
+      User.hasMany(models.Enrollment, {
+        foreignKey: "userId",
+      });
     }
   }
   User.init({
     userName: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique:true
+      unique: true
     },
     "Email": {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull: false
     },
     "Password": {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull: false
     },
-    role:DataTypes.ENUM('Teacher', 'Student'),
-  }, {
+    role: {
+      type: DataTypes.ENUM('Educator', 'Student'),
+      allowNull: false
+    }
+  },
+   {
     sequelize,
     modelName: 'User',
   });

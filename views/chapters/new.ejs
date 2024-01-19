@@ -4,6 +4,7 @@
     <h3><%=course.CourseName%> &gt; Create a New Chapter</h3>
     <hr />
     <form action="/courses/<%=course.id%>/chapters" method="post">
+      <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
       <div class="mt-4">
         <label for="ChapterName" class="form-label fs-5 fw-medium"
           >Give the Title to the Chapter</label
