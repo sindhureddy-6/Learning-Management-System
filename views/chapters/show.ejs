@@ -4,7 +4,8 @@
 <div class="row">
   <div class="col-6 mt-4 ml-4">
     <h4>Chapters</h4>
-    <%if(currUser && currUser.role=='Educator'){%>
+    <%if(currUser && currUser.role=='Educator' &&
+    currUser.id==course.EducatorId){%>
     <form action="/courses/<%=course.id%>/chapters/new" method="get">
       <button class="btn btn-warning mt-2">Add Chapter</button>
     </form>
@@ -47,15 +48,34 @@
     chapters not Found!
   </div>
   <% } %> <% for(chapter of chapters) { %>
-  <div class="row cols-5 offset-2 w-50 h-80">
+  <div class="row cols-8 offset-2 w-50 h-80">
     <% if(enrolled && enrolled.length){%>
-    <a
-      href="/courses/<%=course.id%>/chapters/<%=chapter.id%>/pages"
-      class="text-decoration-none text-black"
-      ><div class="border border-1 border-black mb-3 fs-5 fw-medium p-1">
-        <%= chapter.ChapterName %>
+    <div class="row border border-1 border-black mb-3 fs-5 fw-medium p-1">
+      <a
+        href="/courses/<%=course.id%>/chapters/<%=chapter.id%>/pages"
+        class="text-decoration-none text-black col-8"
+        ><div class=""><%= chapter.ChapterName %></div>
+      </a>
+      <%if(currUser && currUser.role=='Educator' &&
+      currUser.id==course.EducatorId){%>
+      <div class="col-2">
+        <form
+          action="/courses/<%=course.id%>/chapters/<%=chapter.id%>/edit"
+          method="get"
+        >
+          <button class="btn btn-warning">Edit</button>
+        </form>
       </div>
-    </a>
+      <div class="col-2">
+        <form
+          action="/courses/<%=course.id%>/chapters/<%=chapter.id%>?_method=DELETE"
+          method="post"
+        >
+          <button class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+      <%}%>
+    </div>
     <% }else{ %>
     <div class="border border-1 border-black mb-3 fs-5 fw-medium p-1">
       <%= chapter.ChapterName %>

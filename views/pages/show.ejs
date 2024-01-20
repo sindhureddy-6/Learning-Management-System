@@ -12,12 +12,15 @@
     </button>
   </div>
   <div class="col-5">
+    <%if(currUser && currUser.role=='Educator' &&
+    currUser.id==course.EducatorId){%>
     <a
       href="/courses/<%=course.id%>/chapters/<%=chapter.id%>/pages/new"
       class="btn btn-primary mt-3"
     >
       Add New Page
     </a>
+    <%}%>
   </div>
 </div>
 <div
@@ -61,6 +64,8 @@
     <div class="row cols-12">
       <h3 class="col-9"><%= page.PageName %></h3>
       <div class="row col-3">
+        <%if(currUser && currUser.role=='Educator' &&
+        currUser.id==course.EducatorId){%>
         <form
           action="/courses/<%= course.id %>/chapters/<%= chapter.id %>/Pages/<%= page.id %>/edit"
           method="get"
@@ -75,6 +80,7 @@
         >
           <button class="btn btn-danger">Delete</button>
         </form>
+        <%}%>
       </div>
     </div>
     <hr />
