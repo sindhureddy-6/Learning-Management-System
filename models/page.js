@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       Page.belongsTo(models.Chapter, {
         foreignKey: "ChapterID",
       });
+      Page.hasMany(models.Progress, {
+        foreignKey: "PageID",
+      });
     }
   }
   Page.init({

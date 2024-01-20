@@ -17,6 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Enrollment, {
         foreignKey: "userId",
       });
+      User.hasMany(models.Progress, {
+        foreignKey: "StudentID",
+      });
     }
   }
   User.init({

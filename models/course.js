@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
       Course.hasMany(models.Enrollment, {
         foreignKey: "courseId",
       });
+       Course.hasMany(models.Progress, {
+        foreignKey: "CourseID",
+      });
     }
   }
   Course.init({

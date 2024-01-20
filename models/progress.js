@@ -11,6 +11,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Progress.belongsTo(models.User, {
+        foreignKey: "StudentID",
+      });
+      Progress.belongsTo(models.Course, {
+        foreignKey: "CourseID",
+      });
+      Progress.belongsTo(models.Page, {
+        foreignKey: "PageID",
+      });
+
     }
   }
   Progress.init({
