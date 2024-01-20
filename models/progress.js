@@ -22,6 +22,14 @@ module.exports = (sequelize, DataTypes) => {
       });
 
     }
+    static async MarkedAsComplete(userId, PageId) {
+      let p = await Progress.findOne({ where: { StudentID: userId, PageID: PageId } });
+      if (p) {
+        return p.IsComplete;
+      } else {
+        return false;
+      }
+    }
   }
   Progress.init({
     StudentID: DataTypes.INTEGER,

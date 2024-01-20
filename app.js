@@ -11,7 +11,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const connectEnsureLogin = require("connect-ensure-login");
 const bcrypt = require("bcrypt");
-const { Course, Chapter, Page,User ,Enrollment} = require("./models");
+const { Course, Chapter, Page,User ,Enrollment,Progress} = require("./models");
 
 app.engine('ejs',ejsMate);
 app.set("view engine", "ejs");
@@ -254,6 +254,7 @@ app.delete("/courses/:CourseId/chapters/:ChapterId",connectEnsureLogin.ensureLog
 //show pages
 app.get("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
+        let userId = req.user.id;
         let courseId = req.params.CourseId;
         let chapterId = req.params.ChapterId;
         let course = await Course.findByPk(courseId);
@@ -274,8 +275,8 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensure
         if (nextIndex == Pages.length) {
             nextIndex = 0;
         }
-        console.log("nextPage", nextIndex);
-        res.render("pages/show.ejs", {Pages,course,chapter,page,nextIndex}); 
+        const isMarked =await Progress.MarkedAsComplete(userId, page.id);
+        res.render("pages/show.ejs", {Pages,course,chapter,page,nextIndex,csrfToken:req.csrfToken(),isMarked}); 
     }
     catch (err) {
         console.log(err);
@@ -293,6 +294,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/new",connectEnsureLogin.en
 //get particular page
 app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
+        let userId = req.user.id;
         let courseId = req.params.CourseId;
         let chapterId = req.params.ChapterId;
         let PageId = req.params.PageId;
@@ -309,8 +311,8 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogi
         if (nextIndex == Pages.length) {
             nextIndex = 0;
         }
-        console.log("nextPage", nextIndex);
-        res.render("pages/show.ejs", { Pages, course, chapter, page,nextIndex});
+        const isMarked =await Progress.MarkedAsComplete(userId, PageId);
+        res.render("pages/show.ejs", { Pages, course, chapter, page,nextIndex,csrfToken:req.csrfToken(),isMarked});
     }
     catch (err) {
         console.log(err);
@@ -374,7 +376,7 @@ app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureL
     }
 });
 //enroll
-app.post("/courses/:courseId/enroll",connectEnsureLogin.ensureLoggedIn(), async(req, res) => {
+app.post("/courses/:courseId/enroll", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     const userId = req.user.id;
     console.log("userid", userId);
     const { courseId } = req.params;
@@ -411,7 +413,18 @@ app.post("/courses/:courseId/enroll",connectEnsureLogin.ensureLoggedIn(), async(
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 }
-)
+);
+//markAsComplete
+app.post("/courses/:courseId/chapters/:chapterId/pages/:pageId", async (req, res) => {
+    const userId = req.user.id;
+    const courseId = req.params.courseId;
+    const pageId = req.params.pageId;
+    const chapterId = req.params.chapterId;
+    let progress = await Progress.create({ StudentID: userId, CourseID: courseId, PageID: pageId, IsComplete: true });
+    console.log(progress);
+    console.log("mark as complete");
+    res.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}`)
+});
 // Users
 //signup get
 app.get("/signup", (req, res) => {
