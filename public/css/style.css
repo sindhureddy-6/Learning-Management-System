@@ -2,3 +2,7 @@ html,body{
     margin:0 !important;
     padding:0 !important;
 }
+.Continue,.Completed{
+    padding-left: 0 !important;
+    padding-right:0 !important;
+}

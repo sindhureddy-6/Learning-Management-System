@@ -11,6 +11,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const connectEnsureLogin = require("connect-ensure-login");
 const bcrypt = require("bcrypt");
+const db = require("./models");
 const { Course, Chapter, Page,User ,Enrollment,Progress} = require("./models");
 
 app.engine('ejs',ejsMate);
@@ -97,6 +98,10 @@ app.use((req, res, next) => {
     next();
 });
 //all courses
+// app.get("/", async(req, res) => {
+//     const totalPagesInCourse =await Page.getPagesInCourse(45);
+//     console.log(totalPagesInCourse);
+// });
 app.get("/courses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let userId = req.user.dataValues.id;
     let courses = await Course.findAll({
@@ -133,8 +138,11 @@ app.get("/courses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let userCourses = courses.filter((course) => {
         return courseIds.includes(course.id)
     });
-
-    res.render("courses/home.ejs", { courses, userCourses, csrfToken: req.csrfToken() });
+    userCourses= await Promise.all(userCourses.map(async (course) => {
+  course.progress = await Progress.getCompletionProgress(db, userId, course.id);
+  return course;
+    }));
+res.render("courses/home.ejs", { courses, userCourses, csrfToken: req.csrfToken() });
 });
 
 
@@ -320,10 +328,10 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogi
 });
 app.post("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
-        let courseId = req.params.CourseId;
-         let ch_id = req.params.ChapterId;
-        let page = await Page.create({ ...req.body});
-        res.redirect(`/courses/${courseId}/chapters`);
+        let CourseId = req.params.CourseId;
+         let ChapterID = req.params.ChapterId;
+        let page = await Page.create({ ...req.body, ChapterID,CourseId});
+        res.redirect(`/courses/${CourseId}/chapters`);
     }
     catch (err) {
         console.log(err);

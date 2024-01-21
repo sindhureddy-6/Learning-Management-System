@@ -12,7 +12,7 @@
     <%}%>
   </div>
   <!-- Enroll card -->
-  <% if(enrolled && !enrolled.length){%>
+  <% if(enrolled && !enrolled.length && currUser.id!=course.EducatorId){%>
   <div class="col-6 offset-3 card ml-3" style="width: 16rem">
     <div class="card-body">
       <h5 class="card-title"><%=course.CourseName%></h5>
@@ -49,7 +49,7 @@
   </div>
   <% } %> <% for(chapter of chapters) { %>
   <div class="row cols-8 offset-2 w-50 h-80">
-    <% if(enrolled && enrolled.length){%>
+    <% if(enrolled && enrolled.length || currUser.id==course.EducatorId){%>
     <div class="row border border-1 border-black mb-3 fs-5 fw-medium p-1">
       <a
         href="/courses/<%=course.id%>/chapters/<%=chapter.id%>/pages"
@@ -82,7 +82,7 @@
     </div>
     <% } %>
   </div>
-  <% if(enrolled && !enrolled.length){%>
+  <% if(enrolled && !enrolled.length && !(currUser.id==course.EducatorId) ){%>
   <div class="col-1 pt-2">
     <i class="fa-solid fa-lock text-center fs-4"></i>
   </div>

@@ -38,13 +38,15 @@
       <div class="row">
         <a
           href="/courses/<%=course.id%>/chapters"
-          class="btn btn-secondary col-6"
-          >Continue <i class="fa-solid fa-play">. .</i>
+          class="btn btn-secondary col-5 Continue"
+          >Continue <i class="fa-solid fa-play"></i>
         </a>
 
-        <form action="#" class="col-6">
+        <form action="#" class="col-7">
           <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
-          <button class="btn btn-success">Completed%</button>
+          <button class="btn btn-success Completed">
+            Completed <%=course.progress%>%
+          </button>
         </form>
       </div>
     </div>

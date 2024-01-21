@@ -11,12 +11,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Page.belongsTo(models.Course, {
+        foreignKey: "CourseId",
+      });
       Page.belongsTo(models.Chapter, {
         foreignKey: "ChapterID",
       });
       Page.hasMany(models.Progress, {
         foreignKey: "PageID",
       });
+    }
+    static async getPagesInCourse(courseId) {
+      const pages = await Page.findAll({ where: { CourseId: courseId } });
+      return pages.length;
     }
   }
   Page.init({
