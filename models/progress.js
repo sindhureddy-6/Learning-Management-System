@@ -21,6 +21,9 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "PageID",
          as: "Page",
       });
+      Progress.belongsTo(models.Enrollment, {
+        foreignKey: "enrollmentId",
+      });
 
     }
     static async MarkedAsComplete(userId, PageId) {

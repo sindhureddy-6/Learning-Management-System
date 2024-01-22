@@ -1,0 +1,26 @@
+<%layout("./layouts/boilerplate.ejs")-%>
+<div class="row cols-8">
+  <h4 class="text-danger text-center mt-4 row offset-3">My Courses</h4>
+  <table class="table mt-3 col-8">
+    <thead>
+      <tr>
+        <th>Sl.no</th>
+        <th>Course Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% myCourses.forEach((course, index) => { %>
+      <tr>
+        <td><%= index + 1 %></td>
+        <td><%= course.CourseName %></td>
+
+        <td>
+          <a href="/courses/<%=course.id%>/chapters" class="btn btn-primary"
+            >view Course</a
+          >
+        </td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>

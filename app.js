@@ -388,7 +388,6 @@ app.post("/courses/:courseId/enroll", connectEnsureLogin.ensureLoggedIn(), async
     const userId = req.user.id;
     console.log("userid", userId);
     const { courseId } = req.params;
-    console.log("courseid", courseId);
 
     try {
         // Check if the course exists
@@ -410,9 +409,11 @@ app.post("/courses/:courseId/enroll", connectEnsureLogin.ensureLoggedIn(), async
         }
 
         // Enroll the user in the course
+        const EducatorId = course.EducatorId;
         await Enrollment.create({
             userId,
             courseId,
+            EducatorId,
         });
 
         return res.redirect(`/courses`);
@@ -433,6 +434,33 @@ app.post("/courses/:courseId/chapters/:chapterId/pages/:pageId", async (req, res
     console.log("mark as complete");
     res.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}`)
 });
+//progress
+//get
+app.get("/courses/:EducatorId/progress", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+    const EducatorId = req.params.EducatorId;
+    const Educator = await User.findByPk(EducatorId);
+    let courses = await Course.findAll({ where: { EducatorId } });
+    let totalEnrollments = await Enrollment.getTotalEnrollments(EducatorId);
+    courses = await Promise.all(courses.map(async (course) => {
+        course.enrollmentCount = await Enrollment.getEnrollmentCount(course.id);
+        course.relativePopularity = Math.floor((course.enrollmentCount / totalEnrollments) * 100);
+        return course;
+    }));
+    courses.sort((a, b) => b.relativePopularity - a.relativePopularity);
+    res.render("courses/progress.ejs", { Educator, courses, csrfToken: req.csrfToken() });
+});
+//mycourses
+//get
+app.get("/courses/:EducatorId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+    try {
+        let EducatorId = req.params.EducatorId;
+        let myCourses = await Course.findAll({ where: { EducatorId } });
+        res.render("courses/mycourses.ejs", { myCourses, csrfToken: req.csrfToken() });
+    }
+    catch (err) {
+        res.send(err);
+    }
+})
 // Users
 //signup get
 app.get("/signup", (req, res) => {

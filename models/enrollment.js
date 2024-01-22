@@ -12,7 +12,16 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Enrollment.belongsTo(models.User, { foreignKey: 'userId' });
+      Enrollment.belongsTo(models.User, { foreignKey: 'EducatorId'});
       Enrollment.belongsTo(models.Course, { foreignKey: 'courseId' });
+      Enrollment.belongsTo(models.Course, { foreignKey: 'courseId' });
+      Enrollment.hasMany(models.Progress, { foreignKey: 'enrollmentId',onDelete: 'CASCADE'});
+    }
+    static async getEnrollmentCount(courseId) {
+      return await Enrollment.count({ where: { courseId } });
+    }
+    static async getTotalEnrollments(EducatorId) {
+      return await Enrollment.count({ where: { EducatorId },distinct: true });
     }
   }
   Enrollment.init({

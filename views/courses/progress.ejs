@@ -1,0 +1,22 @@
+<%layout("./layouts/boilerplate.ejs")-%>
+<h3 class="text-center ml-4 mt-5">Educator Analytics Dashboard</h3>
+<table class="table table-striped table-hover mt-5">
+  <thead>
+    <tr>
+      <th>Sl.no</th>
+      <th>Course Name</th>
+      <th>Enrollment</th>
+      <th>Relative Popularity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% courses.forEach((course, index) => { %>
+    <tr>
+      <td><%= index + 1 %></td>
+      <td><%= course.CourseName %></td>
+      <td><%= course.enrollmentCount %></td>
+      <td><%= course.relativePopularity.toFixed(2)%> %</td>
+    </tr>
+    <% }); %>
+  </tbody>
+</table>

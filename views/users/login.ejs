@@ -4,7 +4,7 @@
     <div class="row justify-content-center">
       <div class="col-md-6">
         <form
-          class="bg-white p-4 rounded shadow"
+          class="bg-white p-4 rounded shadow w-60"
           action="/session"
           method="post"
         >
@@ -12,7 +12,7 @@
           <h2 class="text-center mb-4">Login</h2>
 
           <div class="form-group mb-2">
-            <label for="username" class="fw-medium">Username:</label>
+            <label for="username" class="fw-medium mb-1">Username:</label>
             <input
               type="text"
               class="form-control"
@@ -22,7 +22,7 @@
             />
           </div>
           <div class="form-group mb-2">
-            <label for="password" class="fw-medium">Password:</label>
+            <label for="password" class="fw-medium mb-1">Password:</label>
             <input
               type="password"
               class="form-control"
@@ -31,10 +31,10 @@
               required
             />
           </div>
-          <div class="mb-2 justify-content-center text-center">
+          <div class="mt-4 justify-content-center text-center">
             <button class="btn btn-primary btn-block">Login</button>
           </div>
-          <div class="mt-2 pl-2">
+          <div class="mt-4 pl-2 text-center">
             <h6 class="pl-2">
               Don't have an Account ?
               <a href="/signup" class="text-decoration-none">Signup</a>
