@@ -1,4 +1,4 @@
-const csurf = require("tiny-csrf");
+const csrf = require("tiny-csrf");
 const express = require("express");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
@@ -31,11 +31,7 @@ app.use(session({
       maxAge: 24 * 60 * 60 * 1000,
     }
   }));
-app.use(
-  csurf(
-    "123456789iamasecret987654321look"
-  )
-);
+app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
@@ -468,28 +464,35 @@ app.get("/signup", (req, res) => {
     res.render("users/signup.ejs", { csrfToken: req.csrfToken() });
 });
 app.post("/users", async (req, res) => {
-    if (req.body.Email.length == 0) {
-    req.flash("error", "Email can not be empty!");
-    return res.redirect("/signup");
-  }
+    try {
+        if (req.body.Email.length == 0) {
+            req.flash("error", "Email can not be empty!");
+            return res.redirect("/signup");
+        }
 
-  if (req.body.userName.length == 0) {
-    req.flash("error", "First name cannot be empty!");
-    return res.redirect("/signup");
-  }
+        if (req.body.userName.length == 0) {
+            req.flash("error", "First name cannot be empty!");
+            return res.redirect("/signup");
+        }
 
-  if (req.body.Password.length < 5) {
-    req.flash("error", "Password must be at least 5 characters");
-    return res.redirect("/signup");
-  }
-    const hashedPwd = await bcrypt.hash(req.body.Password, saltRounds);
-    let user=await User.create({ ...req.body, Password: hashedPwd });
-    req.login(user, (err) => {
-      if (err) {
-        console.log(err);
-      }
-      res.redirect("/courses");
-    });
+        if (req.body.Password.length < 5) {
+            req.flash("error", "Password must be at least 5 characters");
+            return res.redirect("/signup");
+        }
+        const hashedPwd = await bcrypt.hash(req.body.Password, saltRounds);
+        let user = await User.create({ ...req.body, Password: hashedPwd });
+        req.login(user, (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(422).send({ error: err.message });
+            }
+            res.redirect("/courses");
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 app.get("/login", (req, res) => {
@@ -550,6 +553,7 @@ app.post("/setpassword", async (request, response) => {
 });
 
 
-app.listen(4000, () => {
-    console.log("app is listening at port 4000");
-});
+// app.listen(4000, () => {
+//     console.log("app is listening at port 4000");
+// });
+module.exports = app;
