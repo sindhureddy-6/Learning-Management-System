@@ -12,7 +12,8 @@ const LocalStrategy = require("passport-local");
 const connectEnsureLogin = require("connect-ensure-login");
 const bcrypt = require("bcrypt");
 const db = require("./models");
-const { Course, Chapter, Page,User ,Enrollment,Progress} = require("./models");
+const { Course, Chapter, Page, User, Enrollment, Progress } = require("./models");
+const flash = require("connect-flash");
 
 app.engine('ejs',ejsMate);
 app.set("view engine", "ejs");
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, "/public")));
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser("cookie-parser-secret"));
+app.use(flash());
 app.use(session({
     secret: "my-super-secret-key-156655548662145",
     resave: true,
@@ -52,7 +54,6 @@ passport.use(
         });
 
         if (!user) {
-          console.log("User not found");
           return done(null, false, { message: "User not found" });
         }
 
@@ -90,18 +91,12 @@ passport.deserializeUser((id, done) => {
 });
 const saltRounds = 10;
 app.use((req, res, next) => {
-    if (req.user && req.user.dataValues) {
-        res.locals.currUser = req.user.dataValues;
-    } else {
-        res.locals.currUser = null;
-    }
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    res.locals.currUser = req.user?req.user:null;
     next();
 });
 //all courses
-// app.get("/", async(req, res) => {
-//     const totalPagesInCourse =await Page.getPagesInCourse(45);
-//     console.log(totalPagesInCourse);
-// });
 app.get("/courses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let userId = req.user.dataValues.id;
     let courses = await Course.findAll({
@@ -151,6 +146,7 @@ app.post("/courses",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         console.log("user id", req.user.dataValues.id);
         await Course.create({ ...req.body, EducatorId: req.user.dataValues.id });
+        req.flash("success","Created Course Successfully!!")
         res.redirect("/courses");
     }
     catch (err) {
@@ -212,7 +208,6 @@ app.post("/courses/:CourseId/chapters",connectEnsureLogin.ensureLoggedIn(), asyn
         // console.log(chapter);
         res.redirect(`/courses/${c_id}/chapters/${chapter.id}/pages/new`)
     } catch (error) {
-        console.error("Error creating chapter:", error);
         res.status(500).send("Internal Server Error");
     }
 });
@@ -236,11 +231,12 @@ app.put("/courses/:CourseId/chapters/:ChapterId",connectEnsureLogin.ensureLogged
             where: {
                id:chapterId,
             }
-        });
+         });
+        req.flash("success", "Chapter Updated Succesfully!!");
         res.redirect(`/courses/${courseId}/chapters`);
     }
     catch (err) {
-        console.log(err);
+         res.status(500).send("Internal Server Error");
     }
 
 });
@@ -253,10 +249,11 @@ app.delete("/courses/:CourseId/chapters/:ChapterId",connectEnsureLogin.ensureLog
                 id: chapterId,  
             }
         });
+        req.flash("success", "Chapter Deleted!!");
         res.redirect(`/courses/${courseId}/chapters`);
     }
     catch (err) {
-        console.log(err);
+       res.status(500).send("Internal Server Error"); 
     }
 })
 //show pages
@@ -287,7 +284,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensure
         res.render("pages/show.ejs", {Pages,course,chapter,page,nextIndex,csrfToken:req.csrfToken(),isMarked}); 
     }
     catch (err) {
-        console.log(err);
+        res.status(500).send("Internal Server Error");
     }   
 });
 //add pages
@@ -323,18 +320,19 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogi
         res.render("pages/show.ejs", { Pages, course, chapter, page,nextIndex,csrfToken:req.csrfToken(),isMarked});
     }
     catch (err) {
-        console.log(err);
+         res.status(500).send("Internal Server Error");
     }
 });
 app.post("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
         let CourseId = req.params.CourseId;
          let ChapterID = req.params.ChapterId;
-        let page = await Page.create({ ...req.body, ChapterID,CourseId});
+        let page = await Page.create({ ...req.body, ChapterID, CourseId });
+        req.flash("success", "Added Page Successfully!!");
         res.redirect(`/courses/${CourseId}/chapters`);
     }
     catch (err) {
-        console.log(err);
+        res.status(500).send("Internal Server Error");
     }
 });
 app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId/edit",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
@@ -348,7 +346,7 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId/edit",connectEnsur
         res.render("pages/edit.ejs", { course, chapter,page,csrfToken:req.csrfToken() });
     }
     catch (err) {
-        console.log(err);
+        res.status(500).send("Internal Server Error");
     }
 });
 app.put("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
@@ -361,10 +359,11 @@ app.put("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogi
                 id: pageId,
             }
         });
+        req.flash("success", "Page Updated Successfully!!");
         res.redirect(`/courses/${courseId}/chapters/${chapterId}/pages`);
     }
     catch (err) {
-        console.log(err);
+          res.status(500).send("Internal Server Error");
     }
 });
 app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
@@ -377,10 +376,11 @@ app.delete("/courses/:CourseId/chapters/:ChapterId/Pages/:PageId",connectEnsureL
                 id: pageId,
             }
         });
+         req.flash("success", "Page Deleted!!");
         res.redirect(`/courses/${courseId}/chapters/${chapterId}/pages`);
     }
     catch (err) {
-        console.log(err);
+        res.status(500).send("Internal Server Error");
     }
 });
 //enroll
@@ -393,7 +393,8 @@ app.post("/courses/:courseId/enroll", connectEnsureLogin.ensureLoggedIn(), async
         // Check if the course exists
         const course = await Course.findByPk(courseId);
         if (!course) {
-            return res.status(404).json({ error: 'Course not found' });
+            req.flash("error", "Course not found");
+            return res.redirect(`/courses`);
         }
 
         // Check if the user is already enrolled in the course
@@ -405,7 +406,8 @@ app.post("/courses/:courseId/enroll", connectEnsureLogin.ensureLoggedIn(), async
         });
 
         if (existingEnrollment) {
-            return res.status(400).json({ error: 'User is already enrolled in this course' });
+            req.flash("error", "User is already enrolled in this course");
+           return res.redirect(`/courses`);
         }
 
         // Enroll the user in the course
@@ -415,11 +417,11 @@ app.post("/courses/:courseId/enroll", connectEnsureLogin.ensureLoggedIn(), async
             courseId,
             EducatorId,
         });
-
+        req.flash("success", "Enrolled Successfully!!");
         return res.redirect(`/courses`);
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        
+        return res.status(500).send({ error: 'Internal Server Error' });
     }
 }
 );
@@ -430,8 +432,7 @@ app.post("/courses/:courseId/chapters/:chapterId/pages/:pageId", async (req, res
     const pageId = req.params.pageId;
     const chapterId = req.params.chapterId;
     let progress = await Progress.create({ StudentID: userId, CourseID: courseId, PageID: pageId, IsComplete: true });
-    console.log(progress);
-    console.log("mark as complete");
+    req.flash("success", "Great job! Page marked as completed.");
     res.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}`)
 });
 //progress
@@ -458,7 +459,7 @@ app.get("/courses/:EducatorId",connectEnsureLogin.ensureLoggedIn(), async (req, 
         res.render("courses/mycourses.ejs", { myCourses, csrfToken: req.csrfToken() });
     }
     catch (err) {
-        res.send(err);
+       return res.status(500).send({ error: 'Internal Server Error' });
     }
 })
 // Users
@@ -467,10 +468,28 @@ app.get("/signup", (req, res) => {
     res.render("users/signup.ejs", { csrfToken: req.csrfToken() });
 });
 app.post("/users", async (req, res) => {
-    console.log("reqBODy,", req.body);
+    if (req.body.Email.length == 0) {
+    req.flash("error", "Email can not be empty!");
+    return res.redirect("/signup");
+  }
+
+  if (req.body.userName.length == 0) {
+    req.flash("error", "First name cannot be empty!");
+    return res.redirect("/signup");
+  }
+
+  if (req.body.Password.length < 5) {
+    req.flash("error", "Password must be at least 5 characters");
+    return res.redirect("/signup");
+  }
     const hashedPwd = await bcrypt.hash(req.body.Password, saltRounds);
-     await User.create({ ...req.body, Password: hashedPwd });
-    res.redirect("/login");
+    let user=await User.create({ ...req.body, Password: hashedPwd });
+    req.login(user, (err) => {
+      if (err) {
+        console.log(err);
+      }
+      res.redirect("/courses");
+    });
 });
 
 app.get("/login", (req, res) => {
@@ -478,21 +497,58 @@ app.get("/login", (req, res) => {
 });
 app.post(
   "/session",
-  passport.authenticate("local", {
-    failureRedirect: "/login"
-  }),
-  (req, res) => {
+  passport.authenticate("local",  { failureRedirect: '/login', failureFlash: true }),
+    (req, res) => {
+     req.flash("success", "Welcome to Eduworld, " + req.user.userName + "!");
      res.redirect("/courses");
   },
 );
 app.get("/signout", (req, res) => {
     req.logout((err) => {
-      if (err) {
-        return next(err);
-      }
-      res.redirect("/login");
+        if (err) {
+            return next(err);
+        }
+        req.flash("success", "You've been successfully signed out. Come back soon!");
+        res.redirect("/login");
     });
-})
+});
+//reset Password get
+app.get("/resetpassword", (request, reponse) => {
+  reponse.render("users/resetPassword.ejs", {
+    title: "Reset Password",
+    csrfToken: request.csrfToken(),
+  });
+});
+// Route for updating the password
+app.post("/setpassword", async (request, response) => {
+  const userEmail = request.body.email;
+  const newPassword = request.body.password;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ where: { Email: userEmail } });
+
+    if (!user) {
+      request.flash("error", "User with that email does not exist.");
+      return response.redirect("/resetpassword");
+    }
+
+    // Hash the new password
+    const hashedPwd = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update the user's password in the database
+    await user.update({ Password: hashedPwd });
+
+      // Redirect to a success page or login page
+    request.flash("success", "Password reset successful! You can now log in with your new password.");
+    return response.redirect("/login");
+  } catch (error) {
+    console.log(error);
+    request.flash("error", "Error updating the password.");
+    return response.redirect("/resetpassword");
+  }
+});
+
 
 app.listen(4000, () => {
     console.log("app is listening at port 4000");
