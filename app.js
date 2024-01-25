@@ -6,6 +6,7 @@ const app = express();
 const Sequelize = require("sequelize");
 const ejsMate = require("ejs-mate");
 const path = require("path");
+const bodyParser = require("body-parser");
 var methodOverride = require('method-override');
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -20,7 +21,8 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(methodOverride('_method'));
-app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("cookie-parser-secret"));
 app.use(session({
     secret: "my-super-secret-key-156655548662145",
@@ -557,7 +559,7 @@ app.post("/setpassword", async (request, response) => {
 });
 
 
-app.listen(4001, () => {
-    console.log("app is listening at port 4001");
-});
+// app.listen(4001, () => {
+//     console.log("app is listening at port 4001");
+// });
 module.exports = app;
