@@ -1,4 +1,4 @@
-const csrf = require("tiny-csrf");
+const csurf = require("tiny-csrf");
 const express = require("express");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
@@ -22,7 +22,6 @@ app.use(express.static(path.join(__dirname, "/public")));
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser("cookie-parser-secret"));
-app.use(flash());
 app.use(session({
     secret: "my-super-secret-key-156655548662145",
     resave: true,
@@ -31,7 +30,8 @@ app.use(session({
       maxAge: 24 * 60 * 60 * 1000,
     }
   }));
-app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
+app.use(csurf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
@@ -91,6 +91,9 @@ app.use((req, res, next) => {
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user?req.user:null;
     next();
+});
+app.get("/", (req, res) => {
+    res.redirect("/login");
 });
 //all courses
 app.get("/courses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
@@ -464,6 +467,7 @@ app.get("/signup", (req, res) => {
     res.render("users/signup.ejs", { csrfToken: req.csrfToken() });
 });
 app.post("/users", async (req, res) => {
+    console.log(req.body._csrf);
     try {
         if (req.body.Email.length == 0) {
             req.flash("error", "Email can not be empty!");
@@ -553,7 +557,7 @@ app.post("/setpassword", async (request, response) => {
 });
 
 
-// app.listen(4000, () => {
-//     console.log("app is listening at port 4000");
-// });
+app.listen(4001, () => {
+    console.log("app is listening at port 4001");
+});
 module.exports = app;

@@ -21,36 +21,42 @@ let login = async (agent, username, password) => {
 };
 
 describe("Learning Management System", function () {
-    beforeAll(async () => {
-        await db.sequelize.sync({ force: true });
-        server = app.listen(4001, () => { });
-        agent = request.agent(server);
-    });
+  beforeAll(async () => {
+    await db.sequelize.sync({ force: true });
+    server = app.listen(4000, () => { });
+    agent = request.agent(server);
+  });
 
-    afterAll(async () => {
-        try {
-            await db.sequelize.close();
-            await server.close();
-        } catch (error) {
-            console.log(error);
-        }
-    });
+  afterAll(async () => {
+    try {
+      await db.sequelize.close();
+      await server.close();
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
-    test("Sign up", async () => {
+  test("Sign up", async () => {
+    // try {
       let res = await agent.get("/signup");
       console.log(res.text);
       const csrfToken = extractCsrfToken(res);
       console.log(csrfToken);
     res = await agent.post("/users").send({
-      userName: "test",
-      Email: "test@gmail.com",
-      role:"Student",
-      Password: "password",
-      _csrf: csrfToken,
-    });
+        _csrf: csrfToken,
+        userName: "test",
+        Email: "test@gmail.com",
+        role: "Student",
+        Password: "password",
+      });
       console.log(res.text);
-    expect(res.statusCode).toBe(302);
+      expect(res.statusCode).toBe(302);
+    // }
+    // catch (err) {
+    //   console.log(err);
+    // }
     });
+
     
 
 });
