@@ -91,7 +91,8 @@ const saltRounds = 10;
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
-    res.locals.currUser = req.user?req.user:null;
+    res.locals.currUser = req.user ? req.user : null;
+    req.session.user = req.user?req.user:null;
     next();
 });
 app.get("/", (req, res) => {
@@ -134,19 +135,34 @@ app.get("/courses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let userCourses = courses.filter((course) => {
         return courseIds.includes(course.id)
     });
-    userCourses= await Promise.all(userCourses.map(async (course) => {
-  course.progress = await Progress.getCompletionProgress(db, userId, course.id);
-  return course;
+    userCourses = await Promise.all(userCourses.map(async (course) => {
+    course.progress = 0; // Assuming progress is initially set to 0
+    const progress = await Progress.getCompletionProgress(db, userId, course.id);
+    course.progress = progress;
+    return course;
     }));
-res.render("courses/home.ejs", { courses, userCourses, csrfToken: req.csrfToken() });
+   const myCourses = userCourses.map(course => {
+    return {
+        id: course.id,
+        CourseName: course.CourseName,
+        EducatorId: course.EducatorId,
+        enrollmentCount: course.getDataValue('enrollmentCount'),
+        user: course.getDataValue('User'),
+        progress: course.progress
+    };
+   });
+    if (req.accepts("html")) {
+        res.render("courses/home.ejs", { courses, userCourses, csrfToken: req.csrfToken() });
+    } else {
+        res.json({ courses, myCourses, csrfToken: req.csrfToken() });
+    }
 });
 
 
 //create course
 app.post("/courses",connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     try {
-        console.log("user id", req.user.dataValues.id);
-        await Course.create({ ...req.body, EducatorId: req.user.dataValues.id });
+        await Course.create({ ...req.body, EducatorId: req.user.id });
         req.flash("success","Created Course Successfully!!")
         res.redirect("/courses");
     }
@@ -191,7 +207,11 @@ app.get("/courses/:CourseId/chapters", connectEnsureLogin.ensureLoggedIn(), asyn
         res.locals.enrolled = await Enrollment.findAll({ where: { userId, courseId } });
         
         let chapters = await Chapter.findAll({ where: { CourseId: courseId }, order: [['id']] });
-        res.render("chapters/show.ejs", { course, chapters,csrfToken:req.csrfToken() });
+        if (req.accepts("html")) {
+            res.render("chapters/show.ejs", { course, chapters, csrfToken: req.csrfToken() });
+        } else {
+            res.json({ chapters });
+        }
     }
     catch (err) {
         console.log(err);
@@ -281,8 +301,12 @@ app.get("/courses/:CourseId/chapters/:ChapterId/Pages",connectEnsureLogin.ensure
         if (nextIndex == Pages.length) {
             nextIndex = 0;
         }
-        const isMarked =await Progress.MarkedAsComplete(userId, page.id);
-        res.render("pages/show.ejs", {Pages,course,chapter,page,nextIndex,csrfToken:req.csrfToken(),isMarked}); 
+        const isMarked = await Progress.MarkedAsComplete(userId, page.id);
+        if (req.accepts("html")) {
+            res.render("pages/show.ejs", { Pages, course, chapter, page, nextIndex, csrfToken: req.csrfToken(), isMarked });
+        } else {
+            res.json( { Pages });
+        }
     }
     catch (err) {
         res.status(500).send("Internal Server Error");
@@ -508,8 +532,8 @@ app.post(
   "/session",
   passport.authenticate("local",  { failureRedirect: '/login', failureFlash: true }),
     (req, res) => {
-     req.flash("success", "Welcome to Eduworld, " + req.user.userName + "!");
-     res.redirect("/courses");
+        req.flash("success", "Welcome to Eduworld, " + req.user.userName + "!");
+        res.redirect("/courses");
   },
 );
 app.get("/signout", (req, res) => {
@@ -559,7 +583,7 @@ app.post("/setpassword", async (request, response) => {
 });
 
 
-// app.listen(4001, () => {
-//     console.log("app is listening at port 4001");
-// });
+app.listen(4001, () => {
+    console.log("app is listening at port 4001");
+});
 module.exports = app;
