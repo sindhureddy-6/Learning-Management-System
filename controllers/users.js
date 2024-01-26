@@ -21,6 +21,19 @@ module.exports.postUsers = async (req, res) => {
             req.flash("error", "Password must be at least 5 characters");
             return res.redirect("/signup");
         }
+         // Check if email already exists
+        const existingEmail = await User.findOne({ where: { Email: req.body.Email } });
+        if (existingEmail) {
+            req.flash("error", "Email already exists!");
+            return res.redirect("/signup");
+        }
+
+        // Check if username already exists
+        const existingUsername = await User.findOne({ where: { userName: req.body.userName } });
+        if (existingUsername) {
+            req.flash("error", "Username already exists!");
+            return res.redirect("/signup");
+        }
         const hashedPwd = await bcrypt.hash(req.body.Password, saltRounds);
         let user = await User.create({ ...req.body, Password: hashedPwd });
         req.login(user, (err) => {
