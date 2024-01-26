@@ -15,7 +15,6 @@ module.exports = (sequelize, DataTypes) => {
       Enrollment.belongsTo(models.User, { foreignKey: 'EducatorId'});
       Enrollment.belongsTo(models.Course, { foreignKey: 'courseId' });
       Enrollment.belongsTo(models.Course, { foreignKey: 'courseId' });
-      Enrollment.hasMany(models.Progress, { foreignKey: 'enrollmentId',onDelete: 'CASCADE'});
     }
     static async getEnrollmentCount(courseId) {
       return await Enrollment.count({ where: { courseId } });

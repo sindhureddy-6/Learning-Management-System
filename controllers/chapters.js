@@ -29,7 +29,6 @@ module.exports.getAllChapters = async (req, res) => {
             ],
             group: ['Course.id', 'User.id']
         });
-        console.log(course.CourseName);
         res.locals.enrolled = await Enrollment.findAll({ where: { userId, courseId } });
         
         let chapters = await Chapter.findAll({ where: { CourseId: courseId }, order: [['id']] });

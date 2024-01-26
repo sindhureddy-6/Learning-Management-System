@@ -1,4 +1,5 @@
 const { Course, Chapter, Page, Progress } = require("../models");
+
 module.exports.getPages = async (req, res) => {
     try {
         let userId = req.user.id;
@@ -30,6 +31,7 @@ module.exports.getPages = async (req, res) => {
         }
     }
     catch (err) {
+        console.log(err);
         res.status(500).send("Internal Server Error");
     }
 };
