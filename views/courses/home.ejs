@@ -19,7 +19,11 @@
 <%}%> <%if (currUser && currUser.role=='Student'){%>
 <div class="row cols-8 d-flex align-items-start flex-wrap gap-3 mt-3">
   <h4>Your Learning Journey</h4>
-  <% for(course of userCourses){%>
+  <% if(userCourses.length==0){%>
+  <div class="alert alert-warning text-center fs-4 fw-medium mt-4" role="alert">
+    You are not currently enrolled in any courses!!
+  </div>
+  <}%> <% for(course of userCourses){%>
   <div class="card ml-3" style="width: 18rem">
     <div class="card-body">
       <h5 class="card-title"><%=course.CourseName%></h5>
