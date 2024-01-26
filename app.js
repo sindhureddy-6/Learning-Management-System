@@ -98,6 +98,7 @@ app.use((req, res, next) => {
     res.locals.currUser = req.user ? req.user : null;
     next();
 });
+
 app.use("/", usersRoute);
 app.use("/courses", coursesRoute);
 app.use("/courses/:CourseId/chapters", chaptersRoute);
