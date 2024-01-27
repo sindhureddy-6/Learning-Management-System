@@ -6,8 +6,9 @@
   "scripts": {
     "pretest": "NODE_ENV=test npx sequelize-cli db:drop && NODE_ENV=test npx sequelize-cli db:create",
     "test": "NODE_ENV=test jest --detectOpenHandles",
-    "start": "nodemon app.js",
-    "start:prod":"node app.js"
+    "start": "nodemon index.js",
+    "start:prod": "node index.js",
+    "prepare": "cd .. && npx husky install /.husky"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +37,7 @@
     "tiny-csrf": "^1.1.4"
   },
   "devDependencies": {
+    "husky": "^9.0.6",
     "sequelize-cli": "^6.6.2"
   }
 }

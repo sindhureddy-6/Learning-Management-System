@@ -103,8 +103,7 @@ app.use("/", usersRoute);
 app.use("/courses", coursesRoute);
 app.use("/courses/:CourseId/chapters", chaptersRoute);
 app.use("/courses/:CourseId/chapters/:ChapterId/Pages", pagesRoute);
-
-app.listen(4001, () => {
-    console.log("app is listening at port 4001");
-});
+app.get("*", (req, res) => {
+  res.send("404,Page Not Found");
+})
 module.exports = app;
