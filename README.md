@@ -61,3 +61,5 @@ The Learning Management System follows the Model-View-Controller (MVC) architect
 
 ## Screenshots 
 ![Sign up Page](images/image.png)
+![image](https://github.com/sindhureddy-6/Learning-Management-System/assets/113305417/210e6b0a-d8ab-4fe0-9342-fbe45af2e832)
+
