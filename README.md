@@ -9,7 +9,7 @@ The Learning Management System (LMS) is an online platform designed to facilitat
 ### For Educators
 
 #### Course Management
-- **Create a Course:** Begin by providing a name for your course.
+- **Create a Course:** Begin by providing a name of the course.
 - **Build Chapters:** Organize your course into chapters for clear structure.
 - **Add Pages:** Populate each chapter with pages.
 
