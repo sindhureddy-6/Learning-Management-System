@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Learning Management System (LMS) is an online platform designed to facilitate learning interactions between educators and students. It allows educators to create courses, organize content into chapters and pages, and track student progress. Students can sign up, enroll in courses, access course content, mark pages as complete, and view their progress status.
+The Learning Management System (LMS) is an online platform designed to facilitate learning interactions between educators and students. It allows educators to create courses, organize content into chapters and pages. Students can sign up, enroll in courses, access course content, mark pages as complete, and view their progress status.
 
 ## Features
 
@@ -53,8 +53,11 @@ The Learning Management System (LMS) is an online platform designed to facilitat
 - **sequelize**: Promise-based ORM for Node.js.
 - **supertest**: Library for testing HTTP servers.
 - **tiny-csrf**: Middleware for CSRF token generation and validation.
+- **husky**:pre-commit hook to run tests
 
 ## MVC Architecture
 
 The Learning Management System follows the Model-View-Controller (MVC) architecture to ensure a clear separation of concerns and maintainability of the codebase.
 
+## Screenshots 
+![Sign up Page](images/image.png)
