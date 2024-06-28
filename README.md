@@ -32,30 +32,6 @@ The Learning Management System (LMS) is an online platform designed to facilitat
 - **Mark Pages as Complete:** Track learning progress by marking pages as completed.
 - **Show Progress Status:** View progress status, possibly through a completion percentage.
 
-### Dependencies
-
-- **bcrypt**: Securely hashes passwords for user authentication.
-- **body-parser**: Middleware for parsing incoming request bodies.
-- **cheerio**: Parses and manipulates HTML and XML documents.
-- **connect-ensure-login**: Middleware for ensuring user authentication.
-- **connect-flash**: Displays temporary messages to users.
-- **cookie-parser**: Middleware for parsing cookies.
-- **ejs-mate**: EJS layout and partials plugin for Express.
-- **express**: Minimal and flexible web application framework.
-- **express-session**: Middleware for handling user sessions.
-- **jest**: JavaScript testing framework.
-- **markdown-it**: Markdown parser for converting Markdown to HTML.
-- **method-override**: Middleware for HTTP method override.
-- **nodemon**: Utility for automatically restarting Node.js applications.
-- **passport**: Authentication middleware for Node.js.
-- **passport-local**: Passport strategy for local authentication.
-- **pg**: PostgreSQL client for Node.js.
-- **pg-hstore**: Serializes and deserializes JSON data for PostgreSQL.
-- **quill**: Modern WYSIWYG editor.
-- **sequelize**: Promise-based ORM for Node.js.
-- **supertest**: Library for testing HTTP servers.
-- **tiny-csrf**: Middleware for CSRF token generation and validation.
-- **husky**:pre-commit hook to run tests
 
 ## MVC Architecture
 
